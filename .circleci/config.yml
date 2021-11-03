@@ -1,0 +1,96 @@
+version: 2
+jobs:
+  build: &shared-config
+    docker:
+      - image: circleci/node:lts-fermium
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependencies-{{ checksum "package.json" }}-v1
+            - dependencies-
+      - run: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependencies-{{ checksum "package.json" }}-v1
+
+  lint:
+    <<: *shared-config
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "package.json" }}-v1
+      - run: yarn lint
+      - run: yarn format:check
+
+  back-test-unit:
+    <<: *shared-config
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "package.json" }}-v1
+      - run:
+          command: yarn test
+          environment:
+            DATABASE_URL: postgres://psqluer:psqlpassword@localhost:5432/psqluer
+
+  back-test-e2e:
+    docker:
+      - image: circleci/node:lts-fermium
+      - image: circleci/postgres:9.6.5
+        environment:
+          POSTGRES_DB: psqluer
+          POSTGRES_USER: psqluer
+          POSTGRES_PASSWORD: psqlpassword
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "package.json" }}-v1
+      - run:
+          command: yarn test:e2e
+          environment:
+            DATABASE_URL: postgres://psqluer:psqlpassword@localhost:5432/psqluer
+
+  back-deploy-heroku:
+    docker:
+      - image: buildpack-deps:trusty
+    steps:
+      - checkout
+      - run:
+          name: Heroku Deploy
+          command: git push https://heroku:$HEROKU_KEY@git.heroku.com/infinite-depths-70195.git HEAD:main 
+      - run:
+          name: Smoke Test
+          command: |
+            HTTPCODE=`curl -s -o /dev/null -w "%{http_code}" https://infinite-depths-70195.herokuapp.com/`
+            if [ "$HTTPCODE" -ne 200 ];then
+                echo "heroku app not responding, failing deploy"
+                exit 1
+            fi
+
+workflows:
+  version: 2
+  build-test-and-lint:
+    jobs:
+      - build
+      - back-test-unit:
+          requires:
+            - build
+      - back-test-e2e:
+          requires:
+            - build
+      - lint:
+          requires:
+            - build
+      - back-deploy-heroku:
+          requires:
+            - build
+            - lint
+            - back-test-e2e
+            - back-test-unit
+          filters:
+            branches:
+              only: main
