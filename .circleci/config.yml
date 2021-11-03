@@ -61,11 +61,11 @@ jobs:
       - checkout
       - run:
           name: Heroku Deploy
-          command: git push https://heroku:$HEROKU_KEY@git.heroku.com/infinite-depths-70195.git HEAD:main 
+          command: git push https://heroku:$HEROKU_KEY@git.heroku.com/boiling-everglades-40707.git HEAD:main 
       - run:
           name: Smoke Test
           command: |
-            HTTPCODE=`curl -s -o /dev/null -w "%{http_code}" https://infinite-depths-70195.herokuapp.com/`
+            HTTPCODE=`curl -s -o /dev/null -w "%{http_code}" https://boiling-everglades-40707.herokuapp.com/`
             if [ "$HTTPCODE" -ne 200 ];then
                 echo "heroku app not responding, failing deploy"
                 exit 1
