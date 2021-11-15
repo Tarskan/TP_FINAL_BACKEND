@@ -7,4 +7,6 @@ COPY . /repo
 
 RUN yarn install
 
+RUN yarn build
+
 ENTRYPOINT [ "yarn", "start:prod" ]
