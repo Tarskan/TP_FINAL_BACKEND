@@ -70,10 +70,10 @@ jobs:
           name: Publish application to docker hub
           command: |
             docker login -e $DOCKER_HUB_EMAIL -u $DOCKER_HUB_USER_ID -p $DOCKER_HUB_PWD
-            docker tag app $DOCKER_HUB_USER_ID/my-awesome-ci-expr:$CIRCLE_BUILD_NUM
-            docker tag app $DOCKER_HUB_USER_ID/my-awesome-ci-expr:tarskan/tp_final_backend_six:appFinal
-            docker push $DOCKER_HUB_USER_ID/my-awesome-ci-expr:$CIRCLE_BUILD_NUM
-            docker push $DOCKER_HUB_USER_ID/my-awesome-ci-expr:tarskan/tp_final_backend_six:appFinal
+            docker tag app $DOCKER_HUB_USER_ID/tp_final_backend_six:$CIRCLE_BUILD_NUM
+            docker tag app $DOCKER_HUB_USER_ID/tp_final_backend_six:appFinal
+            docker push $DOCKER_HUB_USER_ID/tp_final_backend_six:$CIRCLE_BUILD_NUM
+            docker push $DOCKER_HUB_USER_ID/tp_final_backend_six:appFinal
 
   back-deploy-heroku:
     docker:
