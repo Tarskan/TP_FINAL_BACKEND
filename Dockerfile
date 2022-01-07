@@ -5,7 +5,7 @@ WORKDIR /repo
 
 COPY . /repo
 
-RUN yarn install
+RUN sudo yarn install
 
 RUN yarn build
 
